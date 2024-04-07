@@ -18,3 +18,13 @@
 *.vrb
 *.xwm
 **/.env
+
+data
+
+*.ckpt
+*.pt
+**/logs
+**/*logs
+**/raw
+
+**/BioBricks/fine_tuned_description_model
