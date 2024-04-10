@@ -72,20 +72,20 @@
     Query, Key and values are defined as follows:
     $Q=xW_Q$  where, $W_Q \in \R^{F \times D}$, then $Q \in \R^{N \times D}$, $K=xW_K$  where, $W_K \in \R^{F \times D}$, then $K \in \R^{N \times D}$, $V=xW_V$  where, $W_V \in \R^{F \times F}$, then $V \in \R^{N \times F}$.
     Let's measure the match using sim function, where $sim: \R^D \times \R^D \rightarrow \R_+$.
-    According to definition of attention by vaswani,
+    According to definition of attention,
     \begin{equation}
         A_i(x)=V'=\begin{bmatrix}
             \frac{\sum_{j=1}^{N}sim(Q_k,K_j)V_j}{\sum_{j=1}^{N}sim(Q_k,K_j)}
         \end{bmatrix}_{k \in \{N\}}
     \end{equation}
-    Then the entries of this matrix is, $ \frac{\sum_{j=1}^{N}sim(Q_k,K_j)V_j}{\sum_{j=1}^{N}sim(Q_k,K_j)}.$. This is more generalized version of attention from whatever vaswani et. al came up with. If one just substitute the similarity function with $sim(q,k)=exp(\frac{q^TK}{\sqrt{D}})$, we get
+    Then the entries of this matrix is, $ \frac{\sum_{j=1}^{N}sim(Q_k,K_j)V_j}{\sum_{j=1}^{N}sim(Q_k,K_j)}.$ This is more generalized version of attention from whatever vaswani et. al came up with. If one just substitute the similarity function with $sim(q,k)=exp(\frac{q^TK}{\sqrt{D}})$, we get
     \begin{equation}
         A_i(x)=softmax(\frac{QK^T}{\sqrt{D}})V
     \end{equation}
     
 \subsection{Transofrmers are RNNs}
-The definition of attention in $eq^{n}-3$ is generic and can be use to define several other attention implementation. Now, its upto you to decide a function that mimics the properties of similarity function. This includes all kernels $K: \R^{D} \times \R^{D} \rightarrow \R_+$. So, entries of $A_i(x)$ would be $
-            \frac{\sum_{j=1}^{N}K(Q_k,K_j)V_j}{\sum_{j=1}^{N}K(Q_k,K_j)}$
+The definition of attention in $eq^{n}-2$ is generic and can be use to define several other attention implementation. Now, its upto you to decide a function that mimics the properties of similarity function. This includes all kernels $K: \R^{D} \times \R^{D} \rightarrow \R_+$. If we adapt kernels for the measure of match, entries of $A_i(x)$ would be $
+            \frac{\sum_{j=1}^{N}K(Q_k,K_j)V_j}{\sum_{j=1}^{N}K(Q_k,K_j)}$.
        
 Given such a kernel with a feature representation $\Phi(x)$, we can rewrite 
 each entries of $A_i(x)$ as,
@@ -93,7 +93,7 @@ each entries of $A_i(x)$ as,
     V'_k=\frac{\sum_{j=1}^{N}\Phi(Q_k)^T\Phi(K_j)V_j}{\sum_{j=1}^{N}\Phi(Q_k)^T\Phi(K_j)}=\frac{\Phi(Q_k)^T\sum_{j=1}^{N}\Phi(K_j)V_j^T}{\Phi(Q_k)^T\sum_{j=1}^{N}\Phi(K_j)}  
 \end{equation}
 
-Note that, the softmax attention has the computational cost of $O(N^2)$. On the other hand, the new kernel based attention only has computational cost of O(N).
+Note that, the softmax attention has the computational cost of $O(N^2)$. On the other hand, the new kernel based attention only has computational cost of $O(N)$.
 Transformer architecture can be used to efficiently train autoregressive models by masking the attention computation. Let $S_k=\sum_{j=1}^{k}\Phi(K_j)V_j^T$ and $Z_k=\sum_{j=1}^{k}\Phi(K_j)$. i.e. 
 \begin{equation}
     V'_k=\frac{\Phi(Q_k)^T\sum_{j=1}^{k}\Phi(K_j)V_j^T}{\Phi(Q_k)^T\sum_{j=1}^{k}\Phi(K_j)}=\frac{\Phi(Q_k)^TS_k}{\Phi(Q_k)^TZ_k}
@@ -101,55 +101,48 @@ Transformer architecture can be used to efficiently train autoregressive models 
 
 Note that, $S_k$ and $Z_k$ can be computed from $S_{k-1}$ and $Z_{k-1}$ in constant time. This motivates us to see relation between Linear Transformer and RNN. If Linear Transformer with the masking introduced is thought as RNN, we have two hidden states, viz. S and Z. Assume the value of S and Z to be 0 for recurrence. Then,
 \begin{align*}
-    &S_0=0,\text{ } S_k=S_{k-1}+\Phi(K_k)V_k^T=S_{k-1}+\Phi(x_kW_k)(x_kW_V)^T\\
+    &S_0=0,\text{ } S_k=S_{k-1}+\Phi(K_k)V_k^T=S_{k-1}+\Phi(x_kW_K)(x_kW_V)^T\\
     &Z_0=0,\text{ } Z_k=Z_{k-1}+\Phi(K_k)=Z_{k-1}+\Phi(x_kW_K)\\
-    &T_i(x)=f_i(\begin{bmatrix}
+    &T_i(x)=f_i \left(\begin{bmatrix}
         \frac{\Phi(x_kW_Q^T)S_k}{\Phi(x_kW_Q^T)Z_k}+x_k
-    \end{bmatrix}_{k \in N})
+    \end{bmatrix}_{k \in N}\right)
 \end{align*}
 Theoretically, it just not only shows that linear transformer are better than softmax based transformer but also, it satisfies few of the properties of RNN which motivates us to experiment Transformer in autoregressive tasks.
 \subsection{Experiments}
+\subsubsection{Performance on random sequences}
+
+To test the claim made for time complexity, we experimented on various length of random sequences for forward pass and backward pass in both of the models. We also experimented with the time taken to measure the attention in each of the case on random sequences.
+\begin{center}
+    \begin{tabular}{c c}
+         \includegraphics[width=0.3\textwidth]{images/forwardpassandbackwardpass.jpg} &
+         \includegraphics[width=0.3\textwidth]{images/attentiontimemeasure.png}\\
+         Time taken for forward and backward pass vs sequential length & Time taken for attention measure vs sequential length
+    \end{tabular}
+\end{center}
+\subsubsection{Occluded Image Completion}
 We experimented the linear transformer over image generation tasks. We evaluate the model on image generation with autoregressive transformers on the widely used MNIST dataset. The architecture for this experiment is same to Katharopoulos et. al. Thanks to Katharaopoulos et. al., we had pretrained model for MNIST. We test the model on random image generation and measured the time, image completion task and quality measurement and time difference. 
 \begin{center}
     \begin{tabular}{c c c }
-		\includegraphics[width=0.15\textwidth]{images/input0.png} & \includegraphics[width=0.15\textwidth]{images/occuluded0.png} & \includegraphics[width=0.3\textwidth]{images/result0.png} &  \\
+        \includegraphics[width=0.15\textwidth]{images/input0.png} & \includegraphics[width=0.15\textwidth]{images/occuluded0.png} & \includegraphics[width=0.3\textwidth]{images/result0.png} \\
 		MNIST & Occuluded MNIST & Output
     \end{tabular}
 \end{center}
     {Linear model was able to achieve faster and better image completion for given occluded input in comprasion to softmax based transformer}
 
-\begin{tabular}{|c|c|c|c|}
+\begin{tabular}{c|c|c|c}
+    S.N & Number of Images generated & Linear & Softmax \\
     \hline
-    S.No. & Number of Images generated & Linear & Softmax \\
-    \hline
-     1 & 100 & 33.45 & 367.91\\
-     2 & 200 & 67.46 & 811.99\\
-     3 & 300 & 76.46 & 1248.15\\
-     4 & 400 & - & -\\
-     5 & 500 & - & -\\
-     \hline
-\end{tabular}
+     1 & 100 & 33.45 s & 367.91 s\\
+     2 & 200 & 67.46 s & 811.99 s\\
+     3 & 300 & 76.46 s & 1248.15 s\\
 
-To test the claim made for time complexity, we experimented on various length of random sequences for forward pass and backward pass in both of the models. We also experimented with the time taken to measure the attention in each of the case on random sequences only.
-\begin{figure}
-    \begin{subfigure}{0.5\textwidth}
-        \centering
-        \includegraphics[scale=0.3]{images/forwardpassandbackwardpass.jpg}
-        \caption{Time taken for forward pass and backward pass vs sequential length}
-    \end{subfigure}
-    \begin{subfigure}{0.5\textwidth}
-        \centering
-        \includegraphics[scale=0.25]{images/bhosdiwala.jpg}
-        \caption{Time taken for attention measure vs sequential length}
-    \end{subfigure}
-\end{figure}
+\end{tabular}
 
 \label{gen_inst}
 
-\subsection{Occluded Image Completion}
 
 \section{Low-Rank Adaptation (LoRA) of Large Language Models}
-Due to the compute requirements of large-scale pre-training of Large Language Models (LLMs), fine-tuning is a widely adopted paradigm for adapting models pre-trained on general domain data to particular tasks or domains. However, the large number of parameters in such models can make even fine-tuning prohibitively expensive. Work from Li et al.~\cite{li2018measuring} and Aghajanyan et al.~\cite{aghajanyan2020intrinsic} has demonstrated that models may be over-parameterized and may reside on a low intrinsic dimension. Taking inspiration from these results, Hu et al.~\cite{hu2022lora} showed empirically that the change in weights during model adaptation also has a low intrinsic rank. This not only makes it possible to achieve comparable accuracies with faster fine-tuning (due to lesser trainable parameters) but also makes it possible to easily switch different adaptators in and out during deployment. A matrix $M \in \R^{n \times m}$ can be rank decomposed as $M = UV$ where $U \in \R^{n \times r}$, $V \in \R^{r \times m}$ and $r$ is the rank of $M$. This reduces the number of trainable parameters from $mn$ to $r(n + m)$. Note that $r(n + m) \ll nm$ for small $r$. This decomposition of the update matrices during fine-tuning lies at the heart of LoRA. Note that $r$ is not known \textit{a priori} and one may have to try several small values of $r$.
+Due to the compute requirements of large-scale pre-training of Large Language Models (LLMs), fine-tuning is a widely adopted paradigm for adapting models pre-trained on general domain data to particular tasks or domains. However, the large number of parameters in such models can make even fine-tuning prohibitively expensive. Work from Li et al.~\cite{li2018measuring} and Aghajanyan et al.~\cite{aghajanyan2020intrinsic} has demonstrated that models may be over-parameterized and may reside on a low intrinsic dimension. Taking inspiration from these results, Hu et al.~\cite{hu2022lora} showed empirically that the change in weights during model adaptation also has a low intrinsic rank. This not only makes it possible to achieve comparable accuracies with faster fine-tuning (due to fewer trainable parameters) but also makes it possible to easily switch different adaptators in and out during deployment. A matrix $M \in \R^{n \times m}$ can be rank decomposed as $M = UV$ where $U \in \R^{n \times r}$, $V \in \R^{r \times m}$ and $r$ is the rank of $M$. This reduces the number of trainable parameters from $mn$ to $r(n + m)$. Note that $r(n + m) \ll nm$ for small $r$. This decomposition of the update matrices during fine-tuning lies at the heart of LoRA. Note that $r$ is not known \textit{a priori} and one may have to try several small values of $r$.
 
 \subsection{Experiments}
 We train a base neural network on an image classification task on the MNIST dataset. Our base model was composed of three linear layers which together had 55.1K trainable parameters. This model has a test accuracy of approximately 93.2\%. We then created our variants of MNIST, namely Quantized MNIST, Rotated MNIST, and Inverted MNIST. These are illustrated below through an example.
@@ -189,17 +182,17 @@ We then fine-tuned our base model on the three datasets using LoRA, with differe
 We further explore whether LoRA can be used to train models from scratch, to observe if models have intrinsically low ranks. We trained separate models on each of our three modified MNIST datasets. The accuracies of these models are given below along with the respective $r$ values chosen.
 
 \begin{center}
-    \begin{tabular}{c | c | c | c | c}
-        $r$ & Trainable Parameters & Quantized MNIST & Rotated MNIST & Inverted MNIST \\
+    \begin{tabular}{c | c | c | c | c | c}
+        $r$ & Trainable Parameters & MNIST & Quantized MNIST & Rotated MNIST & Inverted MNIST \\
         \hline
         % & & & & \\
-        1 & 1.1K & 23.50\% & 25.91\% & 22.21\% \Tstrut \\
-        2 & 2.1K & 37.48\% & 43.96\% & 45.81\% \\
-        4 & 4.2K & 64.87\% & 62.60\% & 69.67\% \\
-        8 & 8.4K & 77.96\% & 82.39\% & 83.11\% \\
-        16 & 16.8K & 88.2\% & 86.76\% & 87.38\% \\
-        32 & 33.6K & 90.13\% & 90.62\% & 90.25\% \\
-        64 & 67.2K & 91.66\% & 91.85\% & 86.01\%
+        1 & 1.1K & 56.79\% & 23.50\% & 25.91\% & 22.21\% \Tstrut \\
+        2 & 2.1K & 71.90\% & 37.48\% & 43.96\% & 45.81\% \\
+        4 & 4.2K & 84.33\% & 64.87\% & 62.60\% & 69.67\% \\
+        8 & 8.4K & 89.12\% & 77.96\% & 82.39\% & 83.11\% \\
+        16 & 16.8K & 92.64\% & 88.2\% & 86.76\% & 87.38\% \\
+        32 & 33.6K & 93.98\% & 90.13\% & 90.62\% & 90.25\% \\
+        64 & 67.2K & 94.85\% & 91.66\% & 91.85\% & 86.01\%
     \end{tabular}
 \end{center}
 
