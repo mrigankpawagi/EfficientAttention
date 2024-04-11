@@ -50,72 +50,50 @@
 \begin{abstract}
    % \todo{(1) Introduce transformers. (2) Talk about time complexity and why linformer. (3) Introduce fine-tuning and need for LoRA. (4) Mention contributions (experiments)} \\ 
 
-    The transformer architecture proposed by Vaswani et al. revolutionized sequence transduction with its novel ``Scaled Dot-Product Attention'' by outperforming previously dominant recurrent and convolutional models, while dispensing recurrence and convolutions entirely. However, these transformers are prohibitively slow for very long sequences due to their $\mathcal{O}(N^2)$ time complexity in the forward pass, where $N$ is the sequence length. Katharopoulos et al. expressed the self-attention in these transformers as a linear dot-product of kernel feature maps and made use of the associativity property of matrix products to reduce the complexity to $\mathcal{O}(N)$. In addition to these theoritical results, recent empirical results suggest that training of and inference from these models can be made faster and more scalable. One such technique, `Low-Rank Adaption' or LoRA has been proposed by Hu et al. based on previous theoretical results by Li et al. and Aghajanyan et al. LoRA has proven to be particularly valuable in scalable adaptation of pre-trained models to new tasks through fine-tuning. In this article, we will discuss the results mentioned above. Besides reproducing some of the experiments in these papers, our contributions include new experiments to explore these results. 
-   
-  % The Transformer Revolution: Efficiency, Scalability, and Adaptability in Natural Language Processing.
-  %       This term paper explores the transformative impact of the Transformer architecture on Natural Language Processing (NLP). We begin by examining the original Transformer model from Vaswani et al. (2017), which revolutionized machine translation by solely relying on attention mechanisms, achieving superior performance and faster training compared to prior recurrent and convolutional models.
-  %       Next, we delve into Shen et al. (2020)'s work on "Fast Autoregressive Transformers with Linear Attention." This paper addresses a key limitation of the original Transformer – its quadratic complexity for long sequences. By reformulating self-attention as a linear operation, the authors achieve dramatic speedups for autoregressive tasks while revealing an underlying connection between Transformers and recurrent neural networks.
-  %       Finally, we explore  Madaan et al. (2023)'s "LoRA: Low Rank Adaptation of Large Language Models." This paper tackles the challenge of adapting massive pre-trained language models (like GPT-3) to specific tasks. LORA introduces a novel low-rank adaptation technique that significantly reduces the number of trainable parameters while maintaining or even improving performance compared to traditional fine-tuning.
-  %       Overall, this paper investigates how the Transformer architecture has addressed key challenges in NLP, paving the way for more efficient, scalable, and adaptable models.
+    The transformer architecture revolutionized sequence transduction with its novel ``Scaled Dot-Product Attention'' by outperforming previous recurrent and convolutional models, while dispensing recurrence and convolutions entirely. However, these transformers are prohibitively slow for very long sequences due to their $\mathcal{O}(N^2)$ time complexity in the forward pass, where $N$ is the sequence length. By expressing the self-attention in these transformers as a linear dot-product of kernel feature maps and making use of the associativity property of matrix products can reduce the complexity to $\mathcal{O}(N)$. In addition to these theoritical results, recent empirical results suggest that training of and inference from these models can be made faster and more scalable. One such technique, `Low-Rank Adaption' or LoRA has proven to be particularly valuable in the scalable adaptation of pre-trained models to new tasks through fine-tuning. In this article, we will discuss the results mentioned above. Besides reproducing some of the experiments in these papers, our contributions include new experiments to explore these results. 
 \end{abstract}
 
 
 
 \section{Attention Architecture}
-    Attention mechanisms have become an integral part of complex sequence modeling and transduction models in various task, allowing modeling of dependencies without regard to their distance in the input or output sequences.
-    Let $x \in \R^{N \times F}$ denote a sequence of N feature vectors of dimensions 'F'. As proposed by Vaswani et. al., transformer is a function $T: \R^{N \times F} \rightarrow \R^{N \times F}$ defined by the composition of L transformer layers $T_1(\cdot),T_2(\cdot),\cdots,T_i(\cdot),\cdots,T_L(\cdot)$, where $T_i(\cdot)$
-    is defined as:
-    \begin{equation}
-        T_i(x)=f_i(A_i(x)+x)
-    \end{equation}
-    The function $f_i(\cdot)$ transforms each feature independently and implemented with some layer of feedforward Network. $A_i(\cdot)$ is the heart of our transformer i.e. attention. 
-    Query, Key and values are defined as follows:
-    $Q=xW_Q$  where, $W_Q \in \R^{F \times D}$, then $Q \in \R^{N \times D}$, $K=xW_K$  where, $W_K \in \R^{F \times D}$, then $K \in \R^{N \times D}$, $V=xW_V$  where, $W_V \in \R^{F \times F}$, then $V \in \R^{N \times F}$.
-    Let's measure the match using sim function, where $sim: \R^D \times \R^D \rightarrow \R_+$.
-    According to definition of attention,
-    \begin{equation}
-        A_i(x)=V'=\begin{bmatrix}
-            \frac{\sum_{j=1}^{N}sim(Q_k,K_j)V_j}{\sum_{j=1}^{N}sim(Q_k,K_j)}
-        \end{bmatrix}_{k \in \{N\}}
-    \end{equation}
-    Then the entries of this matrix is, $ \frac{\sum_{j=1}^{N}sim(Q_k,K_j)V_j}{\sum_{j=1}^{N}sim(Q_k,K_j)}.$ This is more generalized version of attention from whatever vaswani et. al came up with. If one just substitute the similarity function with $sim(q,k)=exp(\frac{q^TK}{\sqrt{D}})$, we get
-    \begin{equation}
-        A_i(x)=softmax(\frac{QK^T}{\sqrt{D}})V
-    \end{equation}
-    
+    The self-attention mechanism makes it possible to capture dependencies between different positions in a sequence by simultaneously attending to all positions. The ``Scaled Dot-Product Attention'' proposed by Vaswani et al.~\cite{vaswaniAttention} for an input sequence $x \in \R^{N \times F}$ is computed as $\text{Attention}(x) = \text{softmax}(QK^T/\sqrt{D})V$
+    where $Q = xW_Q$ (queries), $K = xW_K$ (keys) and $V = xW_V$ (values). Note that $W_Q, W_K \in \R^{F \times D}$ and $W_V \in \R^{F \times M}$ are learned weights. Then the attention vector for the $i$-th position is given by the $i$-th row,
+    \begin{align*}
+        \text{Attention}(x)_i &= \text{softmax}\left(\frac{(QK^T)_i}{\sqrt{D}} \right) V = \frac{\sum_{j=1}^N \exp(Q_i^TK_j/\sqrt{D})V_j}{\sum_{j=1}^N \exp(Q_i^TK_j/\sqrt{D})} 
+    \end{align*}
+    Since $\exp(Q_i K_j^T / \sqrt{D})$ has to be determined and stored for every $i, j \in \{1, \ldots, N\}$, this leads to $\mathcal{O}(N^2)$ time and memory complexity~\footnote{More precisely, the complexity is $\mathcal{O}(N^2\max\{D, M\})$.}.
+
+    \section{Towards Efficient Attention -- Linearized Attention}
+    The exponential similarity function above can be replaced with any map $\text{sim}: \R^D \times \R^D \to \R_+$. This includes all kernels between the two spaces. Katharopoulos et al.~\cite{transformersRNN} show that given such a kernel with a feature representation $\phi$, we can rewrite the attention computation as
+    \begin{align*}
+        \text{Attention}(x)_i &= \frac{\sum_{j=1}^N \phi(Q_i)^T\phi(K_j)V_j}{\sum_{j=1}^N \phi(Q_i)^T\phi(K_j)} = \frac{\phi(Q_i)^T\sum_{j=1}^N \phi(K_j)V_j^T}{ \phi(Q_i)^T \sum_{j=1}^N \phi(K_j)}
+    \end{align*}
+    Since $\sum_{j=1}^N \phi(K_j)V_j^T$ and $\sum_{j=1}^N \phi(K_j)$ can be computed once reused for every query, this formulation has $\mathcal{O}(N)$ time and memory complexity~\footnote{More precisely, the complexity is $\mathcal{O}(NCM)$ where $C$ is the dimension of the range space of the feature map.}. 
+
 \subsection{Transofrmers are RNNs}
-The definition of attention in $eq^{n}-2$ is generic and can be use to define several other attention implementation. Now, its upto you to decide a function that mimics the properties of similarity function. This includes all kernels $K: \R^{D} \times \R^{D} \rightarrow \R_+$. If we adapt kernels for the measure of match, entries of $A_i(x)$ would be $
-            \frac{\sum_{j=1}^{N}K(Q_k,K_j)V_j}{\sum_{j=1}^{N}K(Q_k,K_j)}$.
-       
-Given such a kernel with a feature representation $\Phi(x)$, we can rewrite 
-each entries of $A_i(x)$ as,
-\begin{equation}
-    V'_k=\frac{\sum_{j=1}^{N}\Phi(Q_k)^T\Phi(K_j)V_j}{\sum_{j=1}^{N}\Phi(Q_k)^T\Phi(K_j)}=\frac{\Phi(Q_k)^T\sum_{j=1}^{N}\Phi(K_j)V_j^T}{\Phi(Q_k)^T\sum_{j=1}^{N}\Phi(K_j)}  
-\end{equation}
-
-Note that, the softmax attention has the computational cost of $O(N^2)$. On the other hand, the new kernel based attention only has computational cost of $O(N)$.
-Transformer architecture can be used to efficiently train autoregressive models by masking the attention computation. Let $S_k=\sum_{j=1}^{k}\Phi(K_j)V_j^T$ and $Z_k=\sum_{j=1}^{k}\Phi(K_j)$. i.e. 
-\begin{equation}
-    V'_k=\frac{\Phi(Q_k)^T\sum_{j=1}^{k}\Phi(K_j)V_j^T}{\Phi(Q_k)^T\sum_{j=1}^{k}\Phi(K_j)}=\frac{\Phi(Q_k)^TS_k}{\Phi(Q_k)^TZ_k}
-\end{equation}
-
-Note that, $S_k$ and $Z_k$ can be computed from $S_{k-1}$ and $Z_{k-1}$ in constant time. This motivates us to see relation between Linear Transformer and RNN. If Linear Transformer with the masking introduced is thought as RNN, we have two hidden states, viz. S and Z. Assume the value of S and Z to be 0 for recurrence. Then,
+The transformer architecture can further be used to efficiently train autoregressive models by masking the attention computation such that a position cannot be influenced by the subsequent positions. Then the attention for the $i$-th position can we written as given below. Note that we define $S_i = \sum_{j=1}^i \phi(K_j)V_j^T$ and $Z_i = \sum_{j=1}^i \phi(K_j)$. 
 \begin{align*}
-    &S_0=0,\text{ } S_k=S_{k-1}+\Phi(K_k)V_k^T=S_{k-1}+\Phi(x_kW_K)(x_kW_V)^T\\
-    &Z_0=0,\text{ } Z_k=Z_{k-1}+\Phi(K_k)=Z_{k-1}+\Phi(x_kW_K)\\
-    &T_i(x)=f_i \left(\begin{bmatrix}
-        \frac{\Phi(x_kW_Q^T)S_k}{\Phi(x_kW_Q^T)Z_k}+x_k
-    \end{bmatrix}_{k \in N}\right)
+    \text{Attention}(x)_i &= \frac{\phi(Q_i)^T\sum_{j=1}^i \phi(K_j)V_j^T}{ \phi(Q_i)^T \sum_{j=1}^i \phi(K_j)} = \frac{\phi(Q_i)^TS_i}{\phi(Q_i)^TZ_i}
 \end{align*}
-Theoretically, it just not only shows that linear transformer are better than softmax based transformer but also, it satisfies few of the properties of RNN which motivates us to experiment Transformer in autoregressive tasks.
+
+Note that, $S_k$ and $Z_k$ can be computed from $S_{k-1}$ and $Z_{k-1}$ in constant time. This enables the transformer to be formulated as an RNN using the following recurrence relations. We set $s_0 = 0$ and $z_0 = 0$, and for all $k \ge 1$,
+\begin{align*}
+    s_k &= s_{k-1} + \phi(K_k)V_k^T = s_{k-1} + \phi(x_kW_K)(x_kW_V)^T \\
+    z_k &= z_{k-1} + \phi(K_k) = z_{k-1} + \phi(x_kW_K)
+\end{align*}
+The resulting RNN thus has two hidden states -- the attention memory $s$ and the normalizer memory $z$. Then the output for the $i$-th transformer layer is given by
+\begin{align*}
+    T_i(x)=f_i \left( \left[ \frac{\phi(x_kW_Q)^Ts_k}{\phi(x_kW_Q)^Tz_k} + x_k \right]_{k=1}^N \right)
+\end{align*}
+
 \subsection{Experiments}
 \subsubsection{Performance on random sequences}
 
 To test the claim made for time complexity, we experimented on various length of random sequences for forward pass and backward pass in both of the models. We also experimented with the time taken to measure the attention in each of the case on random sequences.
 \begin{center}
     \begin{tabular}{c c}
-         \includegraphics[width=0.3\textwidth]{images/forwardpassandbackwardpass.jpg} &
-         \includegraphics[width=0.3\textwidth]{images/attentiontimemeasure.png}\\
+         \includegraphics[width=0.2\textwidth]{images/forwardpassandbackwardpass.jpg} &
+         \includegraphics[width=0.2\textwidth]{images/attentiontimemeasure.png}\\
          Time taken for forward and backward pass vs sequential length & Time taken for attention measure vs sequential length
     \end{tabular}
 \end{center}
@@ -123,20 +101,22 @@ To test the claim made for time complexity, we experimented on various length of
 We experimented the linear transformer over image generation tasks. We evaluate the model on image generation with autoregressive transformers on the widely used MNIST dataset. The architecture for this experiment is same to Katharopoulos et. al. Thanks to Katharaopoulos et. al., we had pretrained model for MNIST. We test the model on random image generation and measured the time, image completion task and quality measurement and time difference. 
 \begin{center}
     \begin{tabular}{c c c }
-        \includegraphics[width=0.15\textwidth]{images/input0.png} & \includegraphics[width=0.15\textwidth]{images/occuluded0.png} & \includegraphics[width=0.3\textwidth]{images/result0.png} \\
+        \includegraphics[width=0.1\textwidth]{images/input0.png} & \includegraphics[width=0.1\textwidth]{images/occuluded0.png} & \includegraphics[width=0.2\textwidth]{images/result0.png} \\
 		MNIST & Occuluded MNIST & Output
     \end{tabular}
 \end{center}
     {Linear model was able to achieve faster and better image completion for given occluded input in comprasion to softmax based transformer}
 
-\begin{tabular}{c|c|c|c}
-    S.N & Number of Images generated & Linear & Softmax \\
-    \hline
-     1 & 100 & 33.45 s & 367.91 s\\
-     2 & 200 & 67.46 s & 811.99 s\\
-     3 & 300 & 76.46 s & 1248.15 s\\
-
-\end{tabular}
+\begin{center}
+    \begin{tabular}{c|c|c|c}
+        S.N & Number of Images generated & Linear & Softmax \\
+        \hline
+         1 & 100 & 33.45 s & 367.91 s \Tstrut\\
+         2 & 200 & 67.46 s & 811.99 s\\
+         3 & 300 & 76.46 s & 1248.15 s\\
+    
+    \end{tabular}
+\end{center}
 
 \label{gen_inst}
 
@@ -149,7 +129,7 @@ We train a base neural network on an image classification task on the MNIST data
 
 \begin{center}
     \begin{tabular}{c c c c}
-		\includegraphics[width=0.15\textwidth]{images/normal_5.png} & \includegraphics[width=0.15\textwidth]{images/quantized_5.png} & \includegraphics[width=0.15\textwidth]{images/rotated_5.png} & \includegraphics[width=0.15\textwidth]{images/inverted_5.png} \\
+		\includegraphics[width=0.1\textwidth]{images/normal_5.png} & \includegraphics[width=0.1\textwidth]{images/quantized_5.png} & \includegraphics[width=0.1\textwidth]{images/rotated_5.png} & \includegraphics[width=0.1\textwidth]{images/inverted_5.png} \\
 		MNIST & Quantized MNIST & Rotated MNIST & Inverted MNIST
     \end{tabular}
 \end{center}
@@ -182,22 +162,22 @@ We then fine-tuned our base model on the three datasets using LoRA, with differe
 We further explore whether LoRA can be used to train models from scratch, to observe if models have intrinsically low ranks. We trained separate models on each of our three modified MNIST datasets. The accuracies of these models are given below along with the respective $r$ values chosen.
 
 \begin{center}
-    \begin{tabular}{c | c | c | c | c | c}
-        $r$ & Trainable Parameters & MNIST & Quantized MNIST & Rotated MNIST & Inverted MNIST \\
+    \begin{tabular}{c | c | c | c | c}
+        $r$ & Trainable Parameters & Quantized MNIST & Rotated MNIST & Inverted MNIST \\
         \hline
         % & & & & \\
-        1 & 1.1K & 56.79\% & 23.50\% & 25.91\% & 22.21\% \Tstrut \\
-        2 & 2.1K & 71.90\% & 37.48\% & 43.96\% & 45.81\% \\
-        4 & 4.2K & 84.33\% & 64.87\% & 62.60\% & 69.67\% \\
-        8 & 8.4K & 89.12\% & 77.96\% & 82.39\% & 83.11\% \\
-        16 & 16.8K & 92.64\% & 88.2\% & 86.76\% & 87.38\% \\
-        32 & 33.6K & 93.98\% & 90.13\% & 90.62\% & 90.25\% \\
-        64 & 67.2K & 94.85\% & 91.66\% & 91.85\% & 86.01\%
+        1 & 1.1K & 23.50\% & 25.91\% & 22.21\% \Tstrut \\
+        2 & 2.1K & 37.48\% & 43.96\% & 45.81\% \\
+        4 & 4.2K & 64.87\% & 62.60\% & 69.67\% \\
+        8 & 8.4K & 77.96\% & 82.39\% & 83.11\% \\
+        16 & 16.8K & 88.2\% & 86.76\% & 87.38\% \\
+        32 & 33.6K & 90.13\% & 90.62\% & 90.25\% \\
+        64 & 67.2K & 91.66\% & 91.85\% & 86.01\%
     \end{tabular}
 \end{center}
 
 \section{Acknowledgements}
-We thank Dhruva Kashyap, one of the teaching assistants in UMC 203 and one of the last Emacs users, for his unwavering technical and emotional support throughout the preparation of this report.
+We thank Dhruva Kashyap, one of the cockiest teaching assistants in UMC 203 and one of the last Emacs users, for his unwavering technical and emotional support throughout the preparation of this report. We are also extremely grateful to Chiranjib ki maa ka bhosada.
 
 \bibliographystyle{plain} % We choose the "plain" reference style
 \bibliography{cite} % Entries are in the refs.bib file
