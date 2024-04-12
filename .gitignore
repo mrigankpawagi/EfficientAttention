@@ -17,6 +17,7 @@
 *.nav
 *.vrb
 *.xwm
+*.bcf
 **/.env
 
 data
