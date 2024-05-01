@@ -115,7 +115,7 @@ We further explore whether LoRA can be used to train models from scratch, to obs
 ## Acknowledgements
 We thank [Dhruva Kashyap](https://github.com/DhruvaKashyap), one of the teaching assistants in UMC 203 at IISc and one of the last Emacs users, for his unwavering technical and emotional support throughout the preparation of this report. We are also extremely grateful to Professor Chiranjib Bhattacharyya for providing us with the opportunity to explore this topic through a graded term-paper in the course. The code for the experiments in section "Transformers are RNNs" was adapted from code provided by Katharopoulos et al.[^2] in [colab.research.google.com/drive/1BV4OaWRAHYGeimO0cqHD86GfnfgUaKD4](https://colab.research.google.com/drive/1BV4OaWRAHYGeimO0cqHD86GfnfgUaKD4). We also used the provided pre-trained weights for both the softmax and linear transformers used in our experiments. The code for the experiments in section "Low-Rank Adaptation (LoRA) of Large Language Models" was adapted from [github.com/sunildkumar/lora\_from\_scratch](https://github.com/sunildkumar/lora_from_scratch/blob/main/lora_on_mnist.ipynb).
 
-All of our code is released in this repository and can be used to reproduce the experiments mentioned above.
+All of our code is released in this repository and can be used to reproduce the experiments mentioned above. If you wish to work on google colab for the exoeriments excluding Lora, please visit https://colab.research.google.com/drive/1TZVRwEbL3SV4qbqAEnMT2iKPsPf4m_H2?usp=sharing
 
 **References**
 
