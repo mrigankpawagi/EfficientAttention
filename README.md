@@ -127,6 +127,11 @@ All of our code is released in this repository and can be used to reproduce the 
 
 [^4]: Chunyuan Li, Heerad Farkhoor, Rosanne Liu, and Jason Yosinski. Measuring the intrinsic dimension of objective landscapes. In _International Conference on Learning Representations_, 2018.
 
-[^5]: Armen Aghajanyan, Sonal Gupta, and Luke Zettlemoyer. Intrinsic dimensionality explains the effectiveness of language model fine-tuning. In Chengqing Zong, Fei Xia, Wenjie Li, and Roberto Navigli, editors, _Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)_, pages 7319–7328, Online, August 2021. Association for Computational Linguistics.
+[^5]: Armen Aghajanyan, Sonal Gupta, and Luke Zettlemoyer. Intrinsic dimensionality explains the effectiveness of language model fine-tuning. In Chengqing Zong, Fei Xia, 
+Wenjie Li, and Roberto Navigli, editors, _Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)_, pages 7319–7328, Online, August 2021. Association for Computational Linguistics.
 
 [^6]: Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. LoRA: Low-rank adaptation of large language models. In _International Conference on Learning Representations_, 2022.
+
+**File and its purpose**
+1. Efficient_Attention.ipynb: This notebook includes experiments on attention mechanisms, specifically vanilla attention and linear attention. Results are provided in the sub-sections "Performance on Random Sequences" and "Occluded Image Completion." Detailed explanations of each function are included within the notebook. 
+2. documents: This folder contains a .tex file for a detailed report on the experiments conducted, along with a presentation for the same.
