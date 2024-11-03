@@ -52,14 +52,14 @@ T_i(x)=f_i \left( \left[ \frac{\phi(x_kW_Q)^TS_k}{\phi(x_kW_Q)^TZ_k} + x_k \righ
 #### Performance on random sequences
 To examine the claims regarding time complexity, we experimented with random sequences of different lengths and measured the time taken to measure the attention in each case. We also measured the total time taken in the forward and backward passes for each sequence.
 
-| ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/forwardpassandbackwardpass.jpg) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/attentiontimemeasure.png)
+| ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/forwardpassandbackwardpass.jpg) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/attentiontimemeasure.png)
 |:--:|:--:|
 | Total time taken for forward and backward passes vs Sequence length | Time taken for attention calculation vs Sequence length |
 
 #### Occluded Image Completion
 We trained a softmax transformer (using the attention from Vaswani et al.[^1]) and a linear transformer (using the attention from Katharopoulos et al.[^2]) for autoregressive image generation on the MNIST dataset[^3]. We then compared the performance of the two models on image completion from occluded images.
 
-| ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/input0.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/occuluded0.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/result0.png) |
+| ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/input0.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/occuluded0.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/result0.png) |
 |:--:|:--:|:--:|
 | MNIST | Occluded MNIST | Outputs |
 
@@ -77,7 +77,7 @@ Due to the compute requirements of large-scale training, fine-tuning is a widely
 ### Experiments
 We train a base neural network on an image classification task on the MNIST dataset[^3]. Our base model was composed of three linear layers which together had 55.1K trainable parameters. This model has a test accuracy of approximately 93.2%. We then created our variants of MNIST, namely Quantized MNIST, Rotated MNIST, and Inverted MNIST. These are illustrated below through an example.
 
-| ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/normal_5.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/quantized_5.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/rotated_5.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/images/inverted_5.png) |
+| ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/normal_5.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/quantized_5.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/rotated_5.png) | ![](https://raw.githubusercontent.com/mrigankpawagi/EfficientAttention/main/documents/images/inverted_5.png) |
 |:--:|:--:|:--:|:--:|
 | MNIST | Quantized MNIST | Rotated MNIST | Inverted MNIST |
 
