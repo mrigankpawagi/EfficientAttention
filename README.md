@@ -116,10 +116,10 @@ We further explore whether LoRA can be used to train models from scratch, to obs
 We thank [Dhruva Kashyap](https://github.com/DhruvaKashyap), one of the teaching assistants in UMC 203 at IISc and one of the last Emacs users, for his unwavering technical and emotional support throughout the preparation of this report. We are also extremely grateful to Professor Chiranjib Bhattacharyya for providing us with the opportunity to explore this topic through a graded term-paper in the course. The code for the experiments in section "Transformers are RNNs" was adapted from code provided by Katharopoulos et al.[^2] in [colab.research.google.com/drive/1BV4OaWRAHYGeimO0cqHD86GfnfgUaKD4](https://colab.research.google.com/drive/1BV4OaWRAHYGeimO0cqHD86GfnfgUaKD4). We also used the provided pre-trained weights for both the softmax and linear transformers used in our experiments. The code for the experiments in section "Low-Rank Adaptation (LoRA) of Large Language Models" was adapted from [github.com/sunildkumar/lora\_from\_scratch](https://github.com/sunildkumar/lora_from_scratch/blob/main/lora_on_mnist.ipynb).
 
 
-**File and its purpose**
-1. Efficient_Attention.ipynb: This notebook includes experiments on attention mechanisms, specifically vanilla attention and linear attention. Results are provided in the sub-sections "Performance on Random Sequences" and "Occluded Image Completion." Detailed explanations of each function are included within the notebook. 
-2. documents: This folder contains a .tex file for a detailed report on the experiments conducted, along with a presentation for the same.
-   
+### This Repository
+1. `Efficient_Attention.ipynb`: This notebook includes experiments on the attention mechanisms, including linear attention. Results are provided in the sub-sections "Performance on Random Sequences" and "Occluded Image Completion." Detailed documentation of the code is included within the notebook.
+2. `/documents`: This directory contains a `.tex` version of this report, along with a presentation for the same (besides images and other resources). The compiled `.pdf` files are also included.
+
 All of our code is released in this repository and can be used to reproduce the experiments mentioned above. You can visit [this](https://colab.research.google.com/drive/1TZVRwEbL3SV4qbqAEnMT2iKPsPf4m_H2?usp=sharing) Colab notebook for experiments on the linear transformer, and [this](https://colab.research.google.com/drive/1nH8ELx2W1UwV8qI-qnGp_5K0CAUfdR6P?usp=sharing) for experiments on LoRA. 
 
 **References**
@@ -132,8 +132,6 @@ All of our code is released in this repository and can be used to reproduce the 
 
 [^4]: Chunyuan Li, Heerad Farkhoor, Rosanne Liu, and Jason Yosinski. Measuring the intrinsic dimension of objective landscapes. In _International Conference on Learning Representations_, 2018.
 
-[^5]: Armen Aghajanyan, Sonal Gupta, and Luke Zettlemoyer. Intrinsic dimensionality explains the effectiveness of language model fine-tuning. In Chengqing Zong, Fei Xia, 
-Wenjie Li, and Roberto Navigli, editors, _Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)_, pages 7319–7328, Online, August 2021. Association for Computational Linguistics.
+[^5]: Armen Aghajanyan, Sonal Gupta, and Luke Zettlemoyer. Intrinsic dimensionality explains the effectiveness of language model fine-tuning. In Chengqing Zong, Fei Xia, Wenjie Li, and Roberto Navigli, editors, _Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Conference on Natural Language Processing (Volume 1: Long Papers)_, pages 7319–7328, Online, August 2021. Association for Computational Linguistics.
 
 [^6]: Edward J Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. LoRA: Low-rank adaptation of large language models. In _International Conference on Learning Representations_, 2022.
-
